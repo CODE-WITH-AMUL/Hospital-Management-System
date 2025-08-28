@@ -1,0 +1,37 @@
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <h3>Personal Information</h3>
+  <input type="text" name="name" value="{{ doctor.doctor_name }}" placeholder="Full Name">
+  <input type="text" name="username" value="{{ doctor.username }}" placeholder="Username">
+  <input type="email" name="email" value="{{ doctor.email }}" placeholder="Email">
+  <input type="text" name="phone" value="{{ doctor.phone }}" placeholder="Phone">
+  <input type="date" name="DOB" value="{{ doctor.dob|date:'Y-m-d' }}">
+  <select name="gender">
+      <option value="Male" {% if doctor.gender == "Male" %}selected{% endif %}>Male</option>
+      <option value="Female" {% if doctor.gender == "Female" %}selected{% endif %}>Female</option>
+      <option value="Other" {% if doctor.gender == "Other" %}selected{% endif %}>Other</option>
+  </select>
+  <textarea name="address">{{ doctor.address }}</textarea>
+
+  <h3>Professional Information</h3>
+  <input type="text" name="specialization" value="{{ doctor.specialization }}" placeholder="Specialization">
+  <input type="text" name="qualification" value="{{ doctor.qualification }}" placeholder="Qualification">
+  <input type="number" name="experience_years" value="{{ doctor.experience_years }}" placeholder="Years of Experience">
+  <input type="text" name="license_number" value="{{ doctor.license_number }}" placeholder="License Number">
+  <input type="text" name="hospital" value="{{ doctor.hospital }}" placeholder="Hospital/Clinic">
+  <input type="text" name="department" value="{{ doctor.department }}" placeholder="Department">
+
+  <h3>Availability & Work</h3>
+  <input type="number" step="0.01" name="consultation_fee" value="{{ doctor.consultation_fee }}" placeholder="Consultation Fee">
+  <input type="text" name="availability_days" value="{{ doctor.availability_days }}" placeholder="Available Days (Mon-Fri)">
+  <input type="text" name="availability_time" value="{{ doctor.availability_time }}" placeholder="Available Time (10AM - 5PM)">
+
+  <h3>Profile Picture</h3>
+  {% if doctor.profile_picture %}
+    <img src="{{ doctor.profile_picture.url }}" alt="Profile Picture" width="120">
+  {% endif %}
+  <input type="file" name="profile_picture">
+
+  <button type="submit">Update Profile</button>
+</form>

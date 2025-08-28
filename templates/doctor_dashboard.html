@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 50;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6 sm:p-8 md:p-12">
+    <!-- Loading Overlay for API Call -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p class="mt-4 text-gray-700 font-medium">Generating summary...</p>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Dashboard Header -->
+        <div class="mb-10 text-center">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-800 tracking-tight">
+                🏥 Doctor's Dashboard
+            </h1>
+            <p class="mt-2 text-lg text-gray-500 font-medium">Manage patients and doctors efficiently.</p>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Profile and Calendar -->
+            <div class="lg:col-span-1">
+                <!-- Doctor Profile Section -->
+                <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8 text-center">
+                    <!-- Placeholder for profile picture -->
+                    <div class="w-32 h-32 rounded-full mx-auto bg-gray-200 border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
+                        <svg class="h-24 w-24 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mt-4">Dr. Jane Doe</h2>
+                    <p class="text-sm text-gray-500">Cardiology Specialist</p>
+                    <div class="mt-6 text-left space-y-2">
+                        <p class="text-gray-600 font-medium">Email: <span class="font-normal text-gray-800">dr.jane.doe@clinic.com</span></p>
+                        <p class="text-gray-600 font-medium">Phone: <span class="font-normal text-gray-800">+1 (555) 123-4567</span></p>
+                        <p class="text-gray-600 font-medium">Total Patients: <span class="font-normal text-gray-800">{{ patients|length }}</span></p>
+                    </div>
+                </div>
+
+                <!-- Today's Calendar Section -->
+                <div class="bg-white rounded-3xl shadow-2xl p-8">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                        </svg>
+                        Today's Appointments
+                    </h2>
+                    <div class="bg-gray-50 rounded-lg p-6 text-center text-gray-500 italic border-dashed border-2 border-gray-300">
+                        <p class="text-lg">No appointments scheduled for today.</p>
+                        <p class="text-sm mt-1">Check back later for updates.</p>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <span id="today-date" class="text-sm text-gray-500 font-medium"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Quick Stats, Doctors, and Patients -->
+            <div class="lg:col-span-2">
+                <!-- Quick Stats Section -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-blue-600 text-white rounded-3xl shadow-lg p-8 flex flex-col items-center justify-center transition-transform transform hover:scale-105">
+                        <span class="text-5xl font-extrabold">{{ doctors|length }}</span>
+                        <span class="text-sm sm:text-base font-medium mt-2 tracking-wide">Total Doctors</span>
+                    </div>
+                    <div class="bg-green-600 text-white rounded-3xl shadow-lg p-8 flex flex-col items-center justify-center transition-transform transform hover:scale-105">
+                        <span class="text-5xl font-extrabold">{{ patients|length }}</span>
+                        <span class="text-sm sm:text-base font-medium mt-2 tracking-wide">Total Patients</span>
+                    </div>
+                </div>
+                
+                <!-- Doctors Section -->
+                <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <svg class="w-7 h-7 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17.07A8 8 0 012 10V6a2 2 0 012-2h4a2 2 0 012 2v4a8 8 0 01-.07 6.93zM16 16a4 4 0 10-8 0 4 4 0 008 0z" />
+                        </svg>
+                        Doctors
+                    </h2>
+                    <form action="" method="GET" class="flex flex-col sm:flex-row gap-4 mb-6">
+                        <input type="text" name="doctor_search" placeholder="Search doctors..."
+                               class="flex-grow px-5 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                        <button type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-xl shadow-md font-semibold hover:bg-blue-700 transition duration-300">
+                            Search
+                        </button>
+                    </form>
+                    
+                    {% if doctors %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {% for doctor in doctors %}
+                                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 shadow-sm transition-transform transform hover:scale-105">
+                                    <h3 class="text-xl font-bold text-slate-800 truncate">{{ doctor.name }}</h3>
+                                    <p class="text-gray-600 mt-2">Specialty: <span class="font-medium text-gray-800">{{ doctor.specialty }}</span></p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 italic text-center">No doctors found.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Patients Section -->
+                <div class="bg-white rounded-3xl shadow-2xl p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <svg class="w-7 h-7 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17.07A8 8 0 012 10V6a2 2 0 012-2h4a2 2 0 012 2v4a8 8 0 01-.07 6.93zM16 16a4 4 0 10-8 0 4 4 0 008 0z" />
+                        </svg>
+                        Patients
+                    </h2>
+                    <form action="" method="GET" class="flex flex-col sm:flex-row gap-4 mb-6">
+                        <input type="text" name="patient_search" placeholder="Search patients..."
+                               class="flex-grow px-5 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                        <button type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-xl shadow-md font-semibold hover:bg-blue-700 transition duration-300">
+                            Search
+                        </button>
+                    </form>
+
+                    {% if patients %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {% for patient in patients %}
+                                <a href="{% url 'patient_details' patient_id=patient.patient_id %}" class="block">
+                                    <div class="bg-green-50 p-6 rounded-2xl border border-green-200 shadow-sm transition-transform transform hover:scale-105">
+                                        <h3 class="text-xl font-bold text-slate-800 truncate">{{ patient.firstname }} {{ patient.lastname }}</h3>
+                                        <p class="text-gray-600 mt-2">Username: <span class="font-medium text-gray-800">{{ patient.username }}</span></p>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 italic text-center">No patients found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Notes Section -->
+    <div class="max-w-7xl mx-auto mt-12 bg-white rounded-3xl shadow-2xl p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <svg class="w-7 h-7 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM12 15a4 4 0 11-8 0 4 4 0 018 0zM14 10a5 5 0 01-10 0 5 5 0 0110 0z" />
+            </svg>
+            Patient Notes
+        </h2>
+        
+        <textarea id="patient-notes" class="w-full h-48 p-4 text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200" placeholder="Paste patient notes here..."></textarea>
+        
+        <div class="flex justify-end mt-4">
+            <button id="summarize-btn" class="px-8 py-3 bg-blue-600 text-white rounded-xl shadow-md font-semibold hover:bg-blue-700 transition duration-300 flex items-center">
+                ✨ Generate Summary
+            </button>
+        </div>
+        
+        <div id="summary-result" class="mt-6 p-6 bg-gray-50 rounded-xl border border-gray-200" style="display: none;">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Summary</h3>
+            <p id="summary-text" class="text-gray-700 leading-relaxed"></p>
+        </div>
+    </div>
+
+    <script>
+        // Gemini API Configuration
+        // Note: The API key is not required in this environment as it is handled by the server.
+        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent';
+
+        // JavaScript to display the current date
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateElement = document.getElementById('today-date');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            dateElement.textContent = today.toLocaleDateString(undefined, options);
+
+            const summarizeBtn = document.getElementById('summarize-btn');
+            const notesTextarea = document.getElementById('patient-notes');
+            const summaryResultDiv = document.getElementById('summary-result');
+            const summaryText = document.getElementById('summary-text');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            summarizeBtn.addEventListener('click', async () => {
+                const selectedText = notesTextarea.value.substring(notesTextarea.selectionStart, notesTextarea.selectionEnd);
+                
+                if (selectedText.trim() === '') {
+                    alert('Please select some text in the notes to summarize.');
+                    return;
+                }
+
+                // Show loading indicator
+                loadingOverlay.style.display = 'flex';
+                summaryResultDiv.style.display = 'none';
+
+                try {
+                    const prompt = `Summarize the following medical notes in a concise and clear paragraph, highlighting key information and diagnoses. Do not add any introductory or concluding sentences. Just the summary.\n\nNotes: "${selectedText}"`;
+                    
+                    const payload = {
+                        contents: [{ parts: [{ text: prompt }] }],
+                    };
+
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const generatedSummary = result.candidates[0].content.parts[0].text;
+
+                    summaryText.textContent = generatedSummary;
+                    summaryResultDiv.style.display = 'block';
+
+                } catch (error) {
+                    console.error('Error during API call:', error);
+                    alert('Failed to generate summary. Please try again.');
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
